@@ -1,0 +1,28 @@
+
+
+Scala Functions vs Scala Methods:
+functions and methods are not the same in Scala
+
+Methods are functions that can access state of the class
+method is something defined with a def
+a value is something you can assign to a val, like first class functions that
+would be considered as values
+
+methods are not values, functions are values
+
+Methods cannot be assigned to variables nor passed as parameters to functions or other methods. If you need to do this, you have to convert the method into a function.
+
+unlike methods, functions are not invoked on an object. Functions are simply called and passed arguments, while methods are invoked on an object and passed arguments
+
+But Scala also provides a shortcut for converting a method into a function. If you invoke the method on its object with no parentheses or parameters and follow it with an underscore, Scala will automatically convert it to a function for you : also known as eta expansion postfix operator
+
+here is some good stuff written abt methods vs functions
+https://tpolecat.github.io/2014/06/09/methods-functions.html
+
+
+
+
+
+Constructors :
+There is no such thing as constructors:
+all code outside of methods i.e. vals and vars are initialized as object is newed up.
