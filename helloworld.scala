@@ -1,5 +1,4 @@
 import scala._;
-
 // def evaluates when called
 // val evaluates when defined
 
@@ -73,6 +72,12 @@ object HelloWorld {
     val add5and6 = add5(6); //no eta conversion need because add5 is already fn
     println("11 + 11 = " + add5and6(11));
 
+    // classes and companion objects
+    val hw = MyString("hello","world");
+    val hh = MyString("hello");
+    println(hw)
+    println(hh)
+
   }
 
   // see how arguments are annoted with types using : (like in many fn prog langs) also the function definition is given by using = before starting block
@@ -103,7 +108,8 @@ object HelloWorld {
 
   def mult(x: Int, y: Int) = x * y
 
-
+  // class name with arguments itself is the constructor
+  // brand/argument becomes an member variable of Calculator class automatically
   class Calculator(brand: String){
     // this val is a constructor, no special thing as constructor
     val color: String = if (brand == "TI"){
@@ -115,6 +121,26 @@ object HelloWorld {
     }
 
     def ad(m: Int, n:Int): Int = m + n
+  }
+
+
+  // MyString class with companion object
+  class MyString(val jString: String) {
+    private var extraData = ""
+    override def toString = jString + extraData
+  }
+
+  // companion object to MyString class
+  object MyString {
+    // static factory with two arguments
+    def apply(base: String, extras: String) = {
+      val s = new MyString(base)
+      s.extraData = extras
+      s
+    }
+
+    // static factory with single argument
+    def apply(base: String) = new MyString(base)
   }
 
   /*-------------- Traits ----------------------*/

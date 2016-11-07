@@ -1,4 +1,11 @@
 
+object are singletons or value objects that are available globally
+
+Companion objects : An object with same name as class or trait and is defined in same source file as associated file or trait.
+analog to companion object in java is class with static methods, which are kind of singleton, globally available. In scala you would move static methods to Companion object
+Use case for companion objects is to define factory methods for class.(which are static usually in java)
+companion objects have full access to class members including private ones
+Using companion objects, you can put apply method inside companion object to work like a constructor/factory method
 
 Scala Functions vs Scala Methods:
 functions and methods are not the same in Scala
@@ -19,8 +26,31 @@ But Scala also provides a shortcut for converting a method into a function. If y
 here is some good stuff written abt methods vs functions
 https://tpolecat.github.io/2014/06/09/methods-functions.html
 
+An object whose primary purpose is giving its members a namespace is sometimes called a module
 
 
+apply method gives you a nice syntactic sugar for when class or object
+has one main use and can be called directly
+Note: You make an object with def apply(), you can call that object directly
+      but you make a class with def apply(), you need to new it, and that val can be called directly
+(Or in other words)
+When we define a function literal, what is actually being defined is an object with a method called apply.
+So objects that have an apply method can be called as if they were themselves methods.
+So arrow functions are like sugar for single objects with apply method that
+has same implementation
+The name of these simple object is the trait they implement like
+Function1, Function2, Function3, Function4 ... etc
+where n shows num of arguments the function takes
+
+e.g. val lessThan = new Function2[Int, Int, Boolean]{
+     	 	    	def apply(a: Int, b: Int) = a < b
+		    }
+
+There is also useful shorthand for Function1[Int,Int] .. etc in arrow form
+e.g.
+class AddOne extends (Int => Int) {  // arrow form instead of Function1
+ def apply(m:Int): Int = m + 1
+}
 
 
 Constructors :
