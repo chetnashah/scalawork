@@ -1,0 +1,24 @@
+// +A means covariant
+//data type is polymorphic by (type parameter) A, also called generics
+sealed trait List[+A] // List data type parametrized on type, A, a list of As
+case object Nil extends List[Nothing] // List data constructor empty list
+case class Cons[+A](head: A, tail: List[A]) extends List[A]
+
+//recursive Sum type : List = Nil | Cons A::List
+
+//companion object
+object List{
+
+  //static factory to actually make shit, parametrized on type param A
+  def apply[A](as: A*): List[A] = {
+    if(as.isEmpty) Nil
+    else Cons(as.head, apply(as.tail: _*))
+  }
+
+  val example = Cons(1, Cons(2, Cons(3, Nil)))
+  val example2 = List(1,2,3)
+
+  println(example)
+  println(example2)
+
+}

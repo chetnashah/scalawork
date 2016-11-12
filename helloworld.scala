@@ -109,7 +109,7 @@ object HelloWorld {
   def mult(x: Int, y: Int) = x * y
 
   // class name with arguments itself is the constructor
-  // brand/argument becomes an member variable of Calculator class automatically
+  // the constructor field brand will not be promoted to be class member because of missing val, it is only available to color during construction
   class Calculator(brand: String){
     // this val is a constructor, no special thing as constructor
     val color: String = if (brand == "TI"){
@@ -124,7 +124,7 @@ object HelloWorld {
   }
 
 
-  // MyString class with companion object
+  // MyString class with companion object, jString promoted to be class member
   class MyString(val jString: String) {
     private var extraData = ""
     override def toString = jString + extraData

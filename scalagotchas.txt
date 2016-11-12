@@ -1,4 +1,82 @@
 
+possible references:
+scalaschool
+http://www.artima.com/pins1ed/index.html#TOC
+dailyscala
+fpinscala
+
+Scala Expression Summary :
+
+An expression can be :
+   An identifier such as x,
+   A literal like 0, 1.0, "abc"
+   A function application like sqrt(x)
+   An operator application like -x, y+x
+   A selection like math.abs,
+   A conditional expression like if (x < 0) -x else x
+   A block like { val x = math.abs(y); x *2 }
+   An anonymous function, like x => x +1
+
+A definition can be :
+  A function definition like def square(x: Int) = x * x
+  A value definition like val y = square(2)
+
+Method infix notation:
+Methods of artiy-1 can be invoked as infix form
+e.g.
+names.mkStr(",")
+is same as
+names mkStr ","
+where names is object, mkStr is a def and its argument is String, mkStr is
+infix operator
+// should be mostly used for functions with no side effects or methods which
+take functions as parameters e.g. forEach
+
+A require is a test that is performed when a class is initialized
+and if it is not satisfied, throws an illegal argument exception
+require(condition, message)
+
+In scala, a class implicitly introduces a constructor,
+which is called the primary constructor of that class
+The primary constructor simply takes parameter of the class
+and executes all statements in the class body
+
+If this is used in function position it means it is a constructor of class
+e.g.
+class Ration(x: Int, y: Int){// implicit primary constructor
+      def this(x: Int) = this(x,1) // extra constructor
+      private val g = gcd(x,y)
+}
+
+Evaluation model of a class :
+Q: How is instantiation of class new C(e1,e2...em) evaluated?
+A: Like strict evaluation, e1,e2..em are evaluated first then C(e1..em)
+is already a value
+
+Now suppose we have a class definition:
+
+class C(x1, x2, ... xm) = { ... def f(y1, y2 ... yn) = b ... }
+How is following evaluated:
+new C(v1, v2, ... vm).f(w1, w2, ... wn)
+Anser:
+it is rewritten (using three substitutions):
+[w1/y1 ... wn/yn][v1/x1 ... vm/xm][new C(v1,...,vm)/this] b
+
+w1/y1 can be read as w1 replaces y1
+
+Scala keeps the names of types and (values)symbols in different
+namespaces
+
+Nested functions if you dont want to polute outer namespace with
+inner functions
+
+recursive functions are tail recursive if the last step done
+in the recursive function is calling itself.
+
+Normal recursive functions can be converted to tail recursive
+functions if we pass an extra argument accumulator which does
+it stuff before function is called.
+
 object are singletons or value objects that are available globally
 
 Companion objects : An object with same name as class or trait and is defined in same source file as associated file or trait.
@@ -10,12 +88,18 @@ Using companion objects, you can put apply method inside companion object to wor
 Scala Functions vs Scala Methods:
 functions and methods are not the same in Scala
 
+Scala recursive function gotcha :: Recursive functions need to
+specify an explicit type. For non recursive function, return
+type is optional
+
 Methods are functions that can access state of the class
 method is something defined with a def
 a value is something you can assign to a val, like first class functions that
 would be considered as values
 
 methods are not values, functions are values
+
+Methods (defined with def)have types (X)Y where as same functions as values(defined with val/arrow) have type X => Y
 
 Methods cannot be assigned to variables nor passed as parameters to functions or other methods. If you need to do this, you have to convert the method into a function.
 
@@ -52,7 +136,123 @@ class AddOne extends (Int => Int) {  // arrow form instead of Function1
  def apply(m:Int): Int = m + 1
 }
 
+Another pro of returning functions from functions is currying::
+Function currying : any multi argument function can be converted to
+functions that take a single value and return single value
+functions that consume rest of params until all arguments have arrived or
+mathematically :
+f(a,b,c)
+can also be defined as in lambda arrow notation as
+a => b => c => f(a,b,c)
+
+How to uncurry (given a curried fn return multi arity fn):
+def uncurry[A,B,C](f: A => B => C): (A, B) => C =
+  (a, b) => f(a)(b)
+
+Simple compose definition (f.g) or (f after g):
+def compose[A, B, C](f: B=>C, g: A=>B): A => C =
+    a => f(g(a))
+
+
 
 Constructors :
 There is no such thing as constructors:
 all code outside of methods i.e. vals and vars are initialized as object is newed up.
+
+
+Scala case classes:
+They are plain and immutable data holding objects that exclusively depend
+on their constructor arguments or in other words non-encapsulated
+data structures,
+that can be destructured using pattern matching
+e.g.
+Node(1, Leaf(2), None)
+
+for case classes definitely checkout :
+http://www.artima.com/pins1ed/case-classes-and-pattern-matching.html
+
+
+ADTs :
+Sum types: encoded by extendin trait
+e.g. type Pet = Cat | Fish | Squid
+goes to become
+
+sealed trait Pet
+case class Cat(name: String) extends Pet
+case class Fish(name: String, color: Color) extends Pet
+case class Squid(name: String, age: Int) extends Pet
+
+val bob: Pet = Cat("bob")
+
+Destructuring sum types by speicifc type
+using pattern matching on sum type with specific type
+
+def sayHi(p: Pet): String =
+ p match {
+  case Cat(n) => "Meow" + n + "!"
+  case Fish(n, _) => "Hello fishy "+ n + "!"
+  case Squid(n, _) => "Squid says " + n + "!"
+ }
+
+
+ADTs and encapsulation :
+One might object that algebraic data types violate encapsulation
+by making public internal representation of type.
+In FP, we approach concerns about encapsulation a bit differently,
+we don't typically have delicate mutable state which could lead
+to bugs or violation of invariants.
+
+
+Error Handling :
+If you think of erro handling with option,Either
+it is much like returnting errno in C functions
+
+
+Non strict functions :
+You can write non-strict functions by accepting some of arguments
+(just put an arrow(=>) before the type to mark that arg lazy)
+unevaluated using following syntax:
+def if2[A](cond: Boolean, onTrue: => A, onFalse: => A): A =
+    if(cond) onTrue else onFalse
+
+scala> if2(false, sys.error("fail"), 3)
+res2: Int = 3
+
+An argument that is passed unevaluated, will be evaluated once for each place
+it is referred in body of fn
+
+lazy val is keyword use to delay evaluation of right side on need basis
+and the result for that val variable is also cached
+
+Laziness, efficiency and streams:
+Chains of transformations on streams are fused into single pass,
+through use of laziness, much like java streams before using collectors
+
+
+
+Classes and traits :
+All member val in a class needs to be defined(mandatory), 
+class constructor params val can be left empty(their val is defined by the caller), also they will be promoted as class members only if val keyword is present
+in parameters of class definition
+Trait val can be left empty (since it is abstract)
+
+Case classes are like structs with good default impl of
+toString, hashcode, structural equality and unapply/matching,
+ideal use cases for function data constructors, no data/state is
+encapsulated usually, all info is like value object struct
+
+Scala pattern matching :
+
+What exactly is a pattern ?
+A pattern is built from constants, constructors, variables and type tests. Pattern matching tests whether a given value (or sequence of values) has the shape defined by a pattern, and, if it does, binds the variables in the pattern to the corresponding components of the value (or sequence of values). The same variable name may not be bound more than once in a pattern
+
+First of all, pattern matching can happen during a simple val
+declaration. This is the case when left hand side of val decl
+is a pattern instead of a normal identifier
+e.g.
+
+val (x,y) = (2,3) // binds x to 2 and y to 3 i.e. equivalent to declaring two new vals x and y with value 2 and 3 respectively
+
+val 1::xs = List(1,2,3); // binds xs to List(2,3) i.e. equivalent to declaring new val xs = List(2,3)
+
+
