@@ -32,6 +32,143 @@ infix operator
 // should be mostly used for functions with no side effects or methods which
 take functions as parameters e.g. forEach
 
+Function types relate to classes, function values relate to objects.
+i.e. function type A => B is abbreviation for class scala.Function1[A,B]
+
+An anonymous function value (x: Int) => x*x
+is expanded to :
+{
+  class AnnonFun extends Function1[Int, Int] {
+    def apply(x: Int) = x * x
+   }
+   new AnnonFun
+}
+
+or, shorter, using anonymous class syntax:
+
+new Function1[Int, Int] {
+  def apply(x: Int) = x * x
+}
+
+Expansion of function call/function application
+f(a,b) is expanded to
+f.apply(a,b)
+
+so OO translation of
+
+val f = (x: Int) = x * x
+f(7)
+
+will be :
+
+val f = new Function1[Int, Int]{
+  def apply(x:Int) = x * x // Note apply is a method
+}
+f.apply(7)
+
+Note:
+A method such as
+def f(x: Int): Boolean = ...
+is not itself a function value. but
+if you pass it to a place where a functional value
+/ function type is expected, eta expansion takes place
+
+Companion objects with apply method (e.g. List)
+are useful as sugars
+for case clasees, easier syntax for creating
+values etc.
+
+Two types of polymorphism :
+    subtyping : usually seen more in OO langs
+    generics : usually seen more in fp langs/ also avail in oo
+    	     where we send type parameters to higher types like List[T] etc.
+	     So list here is a type constructor
+
+
+Type bounds :
+     S <: T means S is a subtype of T, or T is a supertype of S
+     S >: T means S is a supertype of T, or T is a subtype of S
+
+you can mix type bounds like : [S >: NonEmpty <: IntSet]
+
+Definition of variance:
+Say C[T] is a parametrized type and A,B are such that A <: B
+In general there are three possible relation ships between C[A] n C[B]
+   C[A] <: C[B] - covariant
+   C[A] >: C[B] - contravariant
+   neither - invariant
+
+Scala lets you declare variance of type by annotating the type
+parameter :
+class C[+A] { ... }
+class C[-A] { ... }
+class C[A] { ... }
+
+Scala type tests and type casts :
+Scala lets you do these using methods defined in class Any:
+      def isInstanceOf[T]: Boolean // for type checking
+      def asInstanceOf[T]: T // for type casting
+      
+Pattern matching with case classes :
+trait Expr
+case class Number(n: Int) extends Expr
+case class Sum(e1: Expr, e2: Expr) extends Expr
+
+How do case classes work?
+Basically they are classes with predefined companion objects,
+which is why they don't need new.
+
+e.g.
+class Number(n: Int) extends Expr { ... }
+object Number {
+  def apply(n: Int) = new Number(n)
+}
+
+So you can write Number(1) instead of new Number(1)
+
+class Sum(e1: Expr, e2: Expr) extends Expr { ... }
+object Sum {
+  def apply(e1: Expr, e2: Expr) = new Sum(e1, e2)
+}
+So you can write Sum(Number(1), Number(2)) instead of
+new Sum(new Number(1), new Number(2))
+
+Pattern Matching syntax (which itself is an expression):
+e match {
+  case Pat1 => expr1
+  case Pat2 => expr2
+  case Pat3 => expr3
+}
+
+Patterns are constructed from:
+  1. constructors: Number, Sum
+  2. variables: n, e1, e2
+  3. wildcard patterns _
+  4. constants: 1, true.
+
+Same variable can appear only once in a pattern:
+so Sum(x, x) is not a legal pattern.
+
+Name of constants should begin with capital letter
+with the exception of reserved words null, true false.
+
+If a variable is found in a pattern (lhs)
+it matches any value, and binds the variable to this
+value
+
+A constant pattern c matches values that are equal to c (== style)
+
+Defining eval in terms of pattern matching :
+def eval(e) = e match {
+    case Number(n) => n
+    case Sum(e1, e2) => eval(e1) + eval(e2)
+}
+
+Dynamic method dispatch:
+Object oriented languages(including scala) implement dynamic method Dispatch
+Which means the code invoked by a method call depends on
+the runtime type of the object that contains the method
+
 A require is a test that is performed when a class is initialized
 and if it is not satisfied, throws an illegal argument exception
 require(condition, message)
@@ -231,8 +368,37 @@ through use of laziness, much like java streams before using collectors
 
 
 Classes and traits :
+
+scala.AnyRef is just an alias for java.lang.Object
+
+Any : the base type of all types, methods are : '==', '!=', 'equals', 'hashcode', 'toString'
+AnyRef : same as java.lang.Object
+AnyVal : base type of all primitives
+Nothing : It is a subtype of every other type, and there is no value of type Nothing
+Null : It is subtype of all reference types, There is only one value of type Null which is null, like a singleton e.g. void/empty
+
+The type of expression : throw Exc is Nothing
+
+Classes, objects and traits can inherit from atmost one class,
+but arbitrary many traits
+
+Traits resemble interfaces in java,
+but are more powerful because they can contain fields,
+and concrete methods
+On the other hand,
+traits cannot have (value) parameters, only classes can
+
+Here is an example of a valid trait :
+     trait Planar[T]{
+	def height = 3
+	def width: Int
+	def surface = height * width
+	val kk = 2
+     }
+
 All member val in a class needs to be defined(mandatory), 
-class constructor params val can be left empty(their val is defined by the caller), also they will be promoted as class members only if val keyword is present
+class constructor params val can be left empty(their val is defined by the caller),
+also they will be promoted as class members only if val keyword is present
 in parameters of class definition
 Trait val can be left empty (since it is abstract)
 
