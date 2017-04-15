@@ -1,4 +1,33 @@
 
+
+Scala is a pure object oriented language. Meaning everything
+is an object.
+You might think that primitive types and functions are not objects.
+But primitive types(church numerals and church booleans),
+and functions(Function trait  with apply object) are all first class objects in the end.
+
+An anonymous function value like :
+(x: Int) => x * x
+
+is expanded to :
+
+{
+  class AnonFun extends Function1[Int, Int] {
+    def apply(x: Int) = x * x
+  }
+  new AnonFun
+}
+
+or simply :
+
+new Function1[Int, Int] {
+  def apply(x: Int) = x * x
+}
+
+Methods(defined with def)
+e.g. apply are not function values!!!!
+i.e. first class function values & cannot exist on their own 
+
 possible references:
 scalaschool
 http://www.artima.com/pins1ed/index.html#TOC
@@ -276,7 +305,7 @@ Sets have similar methods from iterable like map, filter
 
 Maps:
 Maps are iterables
-Maps are functions
+Maps are functions (of single arity)
 Class Map[Key, Value] also extends the function type KeyType => ValueType,
 so maps can be used everywhere functions can.
 Unlike java, you dont use MapName.get(key),
@@ -385,6 +414,13 @@ https://tpolecat.github.io/2014/06/09/methods-functions.html
 
 An object whose primary purpose is giving its members a namespace is sometimes called a module
 
+In scala, every concrete type is type of some class or trait,
+Function types are no exception
+e.g.
+Int => String is shorthand for
+scala.Fnction1[Int, String]
+where scala.Function1 is a trait and Int and String are
+its type arguments.
 
 apply method gives you a nice syntactic sugar for when class or object
 has one main use and can be called directly

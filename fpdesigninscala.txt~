@@ -1,0 +1,108 @@
+
+
+JSON is good exercise of using case classes
+as algebraic data types.
+
+You can define function values/lambdas using case pattern matching (like in ML)
+since conceptually it is just term rewriting
+(where pattern is usually the argument(binding happens since no explicit deconstruction is specified),
+       and rewritten term is body)
+val doubler : Int => Int = { case x => x*2 } 
+(Hint, you remove case keyword and it becomes a regular arrow function that is sugar for specifying lambdas)
+
+But...
+You may also have non-total/partial functions defined in the case pattern matching styles:
+  val f : String => String = { case "ping" => "pong" }
+which is only defined for input "ping"
+and throws failure_match for rest of inputs
+
+But sccala language has PartialFunction trait which helps us define
+partial functions and query functions if they are defined at
+particular points:
+
+val f: PartialFunction[String, String] = { case "ping" => "pong" }
+
+f.isDefinedAt("ping") // true
+f.isDefinedAt("hi")   // false
+
+Although isDefinedAt is useful only for outermost pattern matching
+in our case ping
+
+Translation of for-expressions :
+In terms of map, flatmap and filter,
+1. A simple for expression :
+  for (x <- e1) yield e2
+  is same as
+  e1.map(x => e2)
+  or think as (list comprehension)
+  [ e2 | x <- e1 ]
+
+2. generators subsuming filters
+  for (x <- e1 if f; s) yield e2
+  Here predicate f is linked with collection e1 so it is subsumed by e1
+  so it becomes (pulling filter into generator before it)
+  for (x <- e1.withFilter(x => f); s) yield e2
+  
+
+3. A for-expression with a sequence of generators
+  for (x <- e1; y <- e2; s) yield e3
+  where s may/may not be a following sequence of generators
+  e1.flatmap(x => for (y <- e2; s) yield e3)
+
+For-expressions and pattern matching:
+
+For notation is equivalent to query languages for databases:
+
+Describing map, flatmap and filter in terms of for-expressions (like list comprehensions)
+def mapFun[T, U](xs: List[T], f: T => U): List[U] =
+  for (x <- xs) yield f(x)
+
+def flatMap[T, U](xs: List[T], f: T => List[U]): List[U] =
+  for(x <- xs; y <- f(x)) yield y
+
+def filter[T](xs: List[T], p: T => Boolean): List[T] =
+  for (x <- xs; if p(x)) yield x
+
+Are for-expressions tied to collections ?
+Ans: No! all that is require is some
+interpretation of map, flatMap and filter.
+
+
+
+FunctionN Traits
+
+All arrow functions(shorthand lambdas) are just
+newed up FunctionN traits with body of apply as body of lambda
+
+Here is an outline of trait Function1 in stdlib
+// generic over A(argument) and R(return) type parameters
+trait Function1[-A, +R] = {
+      def apply(x: A): R
+}
+
+Any concrete type in scala is some sort of a trait or class,
+and function types are no exception as shown above,
+so they can be extended
+e.g. A extends (B => C)
+
+Subclassing functions in scala :
+One nice aspect of functions being traits is
+that we can subclass function type
+
+For instance maps are functions from keys to values
+
+e.g. trait Map[Key, Value] extends (key => Value)
+
+Similarly sequences are functions from Int indices to values:
+
+e.g. trait Seq[Elem] extends (Int => Elem)
+
+to use items(i)
+
+
+Streams :
+Streams are just like lists but their tails are only evaluated in
+demand. i.e.
+avoid computing tail of sequence until it is needed for the
+evaluation result.
+This is also useful in representing infinite lists
